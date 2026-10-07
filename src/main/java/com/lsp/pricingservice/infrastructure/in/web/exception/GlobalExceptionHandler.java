@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = exception.getErrorCode();
         HttpStatus status = getHttpStatus(errorCode);
 
-        String message = getMessage(errorCode.getCode(), locale, exception.getParameters());
+        String message = getMessage(errorCode.getCode(), locale, (Object[]) exception.getParameters());
 
         return buildResponse(status, errorCode.getCode(), message);
     }
