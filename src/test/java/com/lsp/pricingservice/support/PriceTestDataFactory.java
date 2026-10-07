@@ -49,7 +49,7 @@ public final class PriceTestDataFactory {
         private final Integer brandId = BRAND_ID;
         private final Integer productId = PRODUCT_ID;
         private final Integer priceList = PRICE_LIST;
-        private final Integer priority = PRIORITY;
+        private Integer priority = PRIORITY;
         private final BigDecimal price = PRICE;
         private final String currencyIsoCode = CURRENCY_ISO_CODE;
         private final LocalDateTime startDate = START_DATE;
@@ -57,6 +57,11 @@ public final class PriceTestDataFactory {
 
         public PriceBuilder withId(Integer id) {
             this.id = id;
+            return this;
+        }
+
+        public PriceBuilder withPriority(Integer priority) {
+            this.priority = priority;
             return this;
         }
 

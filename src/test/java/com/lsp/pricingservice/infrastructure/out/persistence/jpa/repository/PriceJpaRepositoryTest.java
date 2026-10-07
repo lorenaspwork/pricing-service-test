@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @ActiveProfiles("test")
 @DataJpaTest
@@ -35,19 +36,42 @@ class PriceJpaRepositoryTest {
         List<PriceEntity> prices = findApplicablePrices(PRODUCT_ID, BRAND_ID, applicationDate);
 
         assertThat(prices)
-                .singleElement()
+                .first()
                 .extracting(PriceEntity::getPrice)
                 .isEqualTo(expectedPrice);
     }
 
     @Test
-    void givenSeveralApplicablePricesWithTheSameMaximumPriority_whenFindApplicablePrice_thenReturnAllTiedPrices() {
+    void givenSeveralApplicablePricesWithTheSamePriority_whenFindApplicablePrice_thenReturnTiedCandidates() {
         List<PriceEntity> prices = findApplicablePrices(
                 PRODUCT_ID_01, BRAND_ID, LocalDateTime.of(2021, 6, 14, 12, 0));
 
         assertThat(prices)
                 .extracting(PriceEntity::getId)
                 .containsExactlyInAnyOrder(7, 8);
+    }
+
+    @Test
+    void givenOneApplicablePrice_whenFindApplicablePrice_thenReturnSingleCandidate() {
+        List<PriceEntity> prices = findApplicablePrices(
+                PRODUCT_ID, BRAND_ID, LocalDateTime.of(2020, 6, 14, 10, 0));
+
+        assertThat(prices)
+                .singleElement()
+                .extracting(PriceEntity::getId)
+                .isEqualTo(1);
+    }
+
+    @Test
+    void givenApplicablePricesWithDifferentPriorities_whenFindApplicablePrice_thenReturnHighestPriorityFirst() {
+        List<PriceEntity> prices = findApplicablePrices(
+                PRODUCT_ID, BRAND_ID, LocalDateTime.of(2020, 6, 14, 16, 0));
+
+        assertThat(prices)
+                .extracting(PriceEntity::getId, PriceEntity::getPriority)
+                .containsExactly(
+                        tuple(2, 1),
+                        tuple(1, 0));
     }
 
     @Test

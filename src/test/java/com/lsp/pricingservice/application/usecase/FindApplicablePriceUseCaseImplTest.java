@@ -62,16 +62,35 @@ class FindApplicablePriceUseCaseImplTest {
     }
 
     @Test
-    void givenMultipleApplicablePrices_whenFindApplicablePrice_thenThrowDuplicatedPrice() {
+    void givenTwoApplicablePricesWithSamePriority_whenFindApplicablePrice_thenThrowDuplicatedPrice() {
         when(priceQueryPort.findApplicablePriceCandidates(PRODUCT_ID, BRAND_ID, APPLICATION_DATE))
                 .thenReturn(List.of(
-                        PriceTestDataFactory.priceBuilder().withId(1).build(),
-                        PriceTestDataFactory.priceBuilder().withId(2).build()));
+                        PriceTestDataFactory.priceBuilder().withId(1).withPriority(5).build(),
+                        PriceTestDataFactory.priceBuilder().withId(2).withPriority(5).build()));
 
         assertThatThrownBy(() -> useCase.findApplicablePrice(PRODUCT_ID, BRAND_ID, APPLICATION_DATE))
                 .isInstanceOfSatisfying(ServiceException.class, exception ->
                         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DUPLICATED_PRICE));
 
+        verify(priceQueryPort).findApplicablePriceCandidates(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
+    }
+
+    @Test
+    void givenTwoApplicablePricesWithDifferentPriorities_whenFindApplicablePrice_thenReturnFirstPrice() {
+        Price highestPriorityPrice = PriceTestDataFactory.priceBuilder()
+                .withId(1)
+                .withPriority(5)
+                .build();
+        Price lowerPriorityPrice = PriceTestDataFactory.priceBuilder()
+                .withId(2)
+                .withPriority(3)
+                .build();
+        when(priceQueryPort.findApplicablePriceCandidates(PRODUCT_ID, BRAND_ID, APPLICATION_DATE))
+                .thenReturn(List.of(highestPriorityPrice, lowerPriorityPrice));
+
+        Price result = useCase.findApplicablePrice(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
+
+        assertThat(result).isSameAs(highestPriorityPrice);
         verify(priceQueryPort).findApplicablePriceCandidates(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
