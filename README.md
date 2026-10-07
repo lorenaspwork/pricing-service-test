@@ -299,21 +299,27 @@ El perfil de test usa una base H2 independiente
 `src/test/resources/sql/test-data.sql`.
 
 Los tests usan el mismo esquema de tablas e índice que la aplicación. Los
-registros del SQL de test con `PRODUCT_ID=35455` y `BRAND_ID=1` cubren los
-cinco escenarios funcionales originales:
+cinco casos funcionales originales consultan `PRODUCT_ID=35455` y
+`BRAND_ID=1`. La tabla muestra, en orden, el registro de `PRICES` elegido y
+el resultado devuelto por la API:
 
-| Fecha de aplicación | `priceList` | `price` |
-|---|---:|---:|
-| 14/06/2020 10:00 | 1 | 35.50 |
-| 14/06/2020 16:00 | 2 | 25.45 |
-| 14/06/2020 21:00 | 1 | 35.50 |
-| 15/06/2020 10:00 | 3 | 30.50 |
-| 16/06/2020 21:00 | 4 | 38.95 |
+| Test | `ID` | `BRAND_ID` | `PRODUCT_ID` | `START_DATE` | `END_DATE` | `PRICE_LIST` | `PRIORITY` | `PRICE` | `CURRENCY_ISO_CODE` | Fecha de aplicación | Resultado HTTP |
+|---:|---:|---:|---:|---|---|---:|---:|---:|---|---|---|
+| 1 | 1 | 1 | 35455 | 14/06/2020 00:00 | 31/12/2020 23:59:59 | 1 | 0 | 35.50 | EUR | 14/06/2020 10:00 | `200 OK`, `priceList=1`, `price=35.50` |
+| 2 | 2 | 1 | 35455 | 14/06/2020 15:00 | 14/06/2020 18:30 | 2 | 1 | 25.45 | EUR | 14/06/2020 16:00 | `200 OK`, `priceList=2`, `price=25.45` |
+| 3 | 1 | 1 | 35455 | 14/06/2020 00:00 | 31/12/2020 23:59:59 | 1 | 0 | 35.50 | EUR | 14/06/2020 21:00 | `200 OK`, `priceList=1`, `price=35.50` |
+| 4 | 3 | 1 | 35455 | 15/06/2020 00:00 | 15/06/2020 11:00 | 3 | 1 | 30.50 | EUR | 15/06/2020 10:00 | `200 OK`, `priceList=3`, `price=30.50` |
+| 5 | 4 | 1 | 35455 | 15/06/2020 16:00 | 31/12/2020 23:59:59 | 4 | 1 | 38.95 | EUR | 16/06/2020 21:00 | `200 OK`, `priceList=4`, `price=38.95` |
 
 Los registros de prueba 7 y 8 crean un empate de prioridad para verificar el
 conflicto. `PriceJpaRepositoryTest` añade una tercera fila durante una prueba
 para comprobar que el repository sigue devolviendo como máximo dos
 candidatos.
+
+| `ID` | `BRAND_ID` | `PRODUCT_ID` | `START_DATE` | `END_DATE` | `PRICE_LIST` | `PRIORITY` | `PRICE` | `CURRENCY_ISO_CODE` |
+|---:|---:|---:|---|---|---:|---:|---:|---|
+| 7 | 1 | 35001 | 14/06/2021 00:00 | 31/12/2021 23:59:59 | 6 | 1 | 69.95 | EUR | 
+| 8 | 1 | 35001 | 14/06/2021 00:00 | 31/08/2021 23:59:59 | 6 | 1 | 69.95 | EUR | 
 
 La suite incluye tests unitarios del UseCase, tests de repository con H2,
 tests de integración HTTP del controller, y tests de mappers, excepciones y
